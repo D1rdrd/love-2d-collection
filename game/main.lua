@@ -1,8 +1,9 @@
 function love.load()
+	print("Hello!")
 end
 
 function love.update()
-	print("Hello!")
+	
 end
 
 function love.draw()
