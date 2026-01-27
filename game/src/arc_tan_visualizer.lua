@@ -3,6 +3,13 @@
 	A visualizer on how the sin and cos are wave functions
 ]]
 
+--[[ Todo List:
+	- [x] Bundle both circle drawing functions on one
+	- [ ] Make the dimensions dynamic according to the screen size
+	- [ ] Refactor function with local variables
+	- [ ] Fix the memory leak
+]]
+
 local arc = {}
 
 function arc.load()
@@ -50,7 +57,6 @@ function arc.update(dt)
   for i, circle in ipairs(list_cm_circles) do
     circle.x = circle.x + circle.speed * dt
   end
-
   
   if sin_index < table.maxn(list_circles) + 1 then
     --createSinMovingCircle(list_circles[sin_index].real_x, list_circles[sin_index].real_y)
@@ -89,7 +95,13 @@ function arc.update(dt)
 end
 
 function arc.draw()
-  
+	local drawCircle = function (size, x, y)
+		local px
+		if size == 'small' then px = 10 end
+		if size == 'big'   then px = 20 end
+		love.graphics.circle('fill', x, y, px)
+	end	
+
   love.graphics.setFont(font)
   -- Debug Text
   love.graphics.setColor(1, 1, 1)
@@ -104,12 +116,12 @@ function arc.draw()
   
   -- Center Circle
   love.graphics.setColor(1, 0, 0)
-  drawCircle(center_x, center_y)
+  drawCircle('small', center_x, center_y)
   
   -- Main Circle
   love.graphics.setColor(1, 1, 1)
   for i, circle in ipairs(list_circles) do 
-    drawCircle(circle.real_x, circle.real_y)
+    drawCircle('small', circle.real_x, circle.real_y)
   end
   
   
@@ -117,7 +129,7 @@ function arc.draw()
     love.graphics.setColor(1, 0.5, 0.5)
     drawRelayLines(circle.x, circle.y)
     love.graphics.setColor(1, 0, 0)
-    drawBigCircle(circle.x, circle.y)
+    drawCircle('big', circle.x, circle.y)
     
     table.remove(list_cr_circles, 1)
     
@@ -128,7 +140,7 @@ function arc.draw()
     drawRelayLines(circle.x, circle.y)
     
     love.graphics.setColor(0, 0, 1)
-    drawBigCircle(circle.x, circle.y)
+    drawCircle('big', circle.x, circle.y)
     
     table.remove(list_sr_circles, 1)
     
@@ -137,12 +149,12 @@ function arc.draw()
   -- Moving Circles
   love.graphics.setColor(1, 0, 0)
   for i, circle in ipairs(list_cm_circles) do 
-    drawCircle(circle.x, circle.y)
+    drawCircle('small', circle.x, circle.y)
   end
   
   love.graphics.setColor(0, 0, 1)
   for i, circle in ipairs(list_sm_circles) do 
-    drawCircle(circle.x, circle.y)
+    drawCircle('small', circle.x, circle.y)
   end
 end
 
@@ -190,13 +202,7 @@ function createCircleOfCircles()
   end
 end
 
-function drawCircle(x, y)
-  love.graphics.circle("fill", x, y, 10)
-end
 
-function drawBigCircle(x, y)
-  love.graphics.circle("fill", x, y, 20)
-end
 
 function drawRelayLines(x, y)
   love.graphics.rectangle("fill", x, y- 5, m_circle_h - x, 10)
