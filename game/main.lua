@@ -11,6 +11,7 @@ local project_list = {
 	'vampire-test',
 }
 
+--- Generates the selection_text
 local function getSelectionText()
 	local selection_text = ''
 	
@@ -21,18 +22,25 @@ local function getSelectionText()
 	return selection_text
 end
 
+local function setActiveProject(projectNumber)
+	active_project = projectNumber
+
+	if projectNumber == 1 then arctan.load() end
+end
+
 function love.load()
 	SELECTION_TEXT = getSelectionText()
 	print("Hello!")
-	arctan.load()
 end
 
-function love.update()
-	
+
+function love.update(dt)
+	if active_project == 1 then arctan.update(dt) end
 end
 
-local drawSelectionList = function ()
-	local CORNER_SPACING = 50
+--- Draws the selection list
+local drawSelectionList = function (CORNER_SPACING)
+	if CORNER_SPACING == nil then CORNER_SPACING = 50	end
 
 	love.graphics.push()
 	love.graphics.translate(CORNER_SPACING, CORNER_SPACING)
@@ -41,17 +49,22 @@ local drawSelectionList = function ()
 end
 
 function love.draw()
-	drawSelectionList()
+	if active_project == nil then drawSelectionList() end
+
+	if active_project == 1 then arctan.draw() end
 end
 
+-- Checks if a key on the keyboard matching a project number was pressed.
+-- If so, returns the number
 local doCheckIfNumberPressed = function (key)
 	for i=1, #project_list do
 		if key == tostring(i) then
 			print('Pressed key ' .. i)
+			return i
 		end
 	end
 end
 
 function love.keypressed(key)
-	doCheckIfNumberPressed()
+	if doCheckIfNumberPressed(key) == 1 then setActiveProject(1) end
 end
