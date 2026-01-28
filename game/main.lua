@@ -1,3 +1,8 @@
+--[[ Todo List:
+	- [ ] General active_project logic
+	- [ ] Move project listing into love.load for consistency
+]]
+
 local project_list = {
 	'arc_tan_visualizer',
 	-- 'collision',
@@ -31,17 +36,20 @@ end
 local function setActiveProject(projectNumber)
 	active_project = projectNumber
 
-	if projectNumber == 1 then projects[1].load() end
+	for i=1, #project_list do
+		if projectNumber == i then projects[i].load() end
+	end
 end
 
 function love.load()
 	SELECTION_TEXT = getSelectionText()
-	print("Hello!")
 end
 
 
 function love.update(dt)
-	if active_project == 1 then projects[1].update(dt) end
+	for i=1, #project_list do
+		if active_project == i then projects[i].update(dt) end
+	end
 end
 
 -- Draws the selection list
@@ -57,7 +65,9 @@ end
 function love.draw()
 	if active_project == nil then drawSelectionList() end
 
-	if active_project == 1 then projects[1].draw() end
+	for i=1, #project_list do
+		if active_project == i then projects[i].draw() end
+	end
 end
 
 function love.keypressed(key)
