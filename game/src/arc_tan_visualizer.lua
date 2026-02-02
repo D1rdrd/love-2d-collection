@@ -7,8 +7,7 @@
 	- [ ] Add the cos function
   - [ ] Refactor the figures to have a better structure
 	- [ ] Add lines connecting the relay circles and figures
-	- [ ] Fix the graphical bug on the relay figures
-    - Try and add the coords every 5 frames instead on each one
+	- [x] Fix the graphical bug on the relay figures
 ]]
 
 local arc = {}
@@ -71,16 +70,25 @@ function relayCircle:update(dt)
     c.x = mainCircle.center_x + mainCircle.radius*math.cos(math.rad(c.angle))
     c.y = mainCircle.center_y - mainCircle.radius*math.sin(math.rad(c.angle))
     
-    -- Insert the new position on the figure table
-    table.insert(c.figure, game.height/2) 
-    table.insert(c.figure, c.y)
     
+
+    if self.start == nil then 
+      self.start = love.timer.getTime()
+    else
+      self.result = love.timer.getTime() - self.start
+      if self.result > 0.01 then
+        -- Insert the new position on the figure table
+        table.insert(c.figure, game.height/2) 
+        table.insert(c.figure, c.y)
+        self.start = love.timer.getTime()
+      end
+    end
 
     for j, f in ipairs(c.figure) do
       if j%2== 1 then
         c.figure[j] = c.figure[j] + 100 * dt
 
-        if c.figure[j] > game.width/2 then -- Remove out of screen figures
+        if c.figure[j] > game.width*1.2 then -- Remove off-screen figures
           table.remove(c.figure, j)
           table.remove(c.figure, j)
         end
@@ -88,8 +96,8 @@ function relayCircle:update(dt)
     end
 
     -- Update the angle
-    if c.angle > 360 then c.angle = 0.1
-    else c.angle = c.angle + c.speed * dt end
+    if c.angle > 360 then c.angle = c.angle - 360 end -- Adjust if full circle
+    c.angle = c.angle + c.speed * dt
   end
 end
 
@@ -100,6 +108,7 @@ function arc.load()
   -- Sin relay circle
   relayCircle:create(mainCircle.center_x+mainCircle.radius, mainCircle.center_y, {0, 0, 1})
   -- Todo: Cos relay circle
+
 end
 
 function arc.update(dt)
