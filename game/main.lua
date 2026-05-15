@@ -1,6 +1,5 @@
 --[[ Todo List:
-	- [ ] General active_project logic
-	- [ ] Move project listing into love.load for consistency
+	- [x] General ACTIVE_PROJECT logic
 ]]
 
 local project_list = {
@@ -27,29 +26,8 @@ local function getSelectionText()
 	for i, v in ipairs(project_list) do
 		selection_text = selection_text .. i .. ': ' .. v .. '\n'
 	end
-
+	
 	return selection_text
-end
-
--- * Wouldn't it be a better idea to have a default function callback which gets
---   called every frame and overwrite it when the active_project changes?
-local function setActiveProject(projectNumber)
-	active_project = projectNumber
-
-	for i=1, #project_list do
-		if projectNumber == i then projects[i].load() end
-	end
-end
-
-function love.load()
-	SELECTION_TEXT = getSelectionText()
-end
-
-
-function love.update(dt)
-	for i=1, #project_list do
-		if active_project == i then projects[i].update(dt) end
-	end
 end
 
 -- Draws the selection list
@@ -62,18 +40,27 @@ local drawSelectionList = function (CORNER_SPACING)
 	love.graphics.pop()
 end
 
-function love.draw()
-	if active_project == nil then drawSelectionList() end
+ACTIVE_PROJECT = nil
 
-	for i=1, #project_list do
-		if active_project == i then projects[i].draw() end
-	end
+local function setActiveProject(projectNumber)
+	ACTIVE_PROJECT = projectNumber
+	projects[ACTIVE_PROJECT].load()
+end
+
+function love.load()
+	SELECTION_TEXT = getSelectionText()
+end
+
+function love.update(dt)
+	if ACTIVE_PROJECT == nil then return end
+	projects[ACTIVE_PROJECT].update(dt)
+end
+
+function love.draw()
+	if ACTIVE_PROJECT == nil then drawSelectionList() return end
+	projects[ACTIVE_PROJECT].draw()
 end
 
 function love.keypressed(key)
-	-- Checks if a key on the keyboard matching a project number was pressed.
-	-- If so, set that as active project
-	for i=1, #project_list do
-		if tonumber(key) == i then setActiveProject(i) end
-	end
+	if project_list[tonumber(key)] then setActiveProject(tonumber(key)) end
 end

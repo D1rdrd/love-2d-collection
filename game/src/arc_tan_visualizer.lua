@@ -6,7 +6,7 @@
 --[[ Todo List:
 	- [ ] Add the cos function
   - [ ] Refactor the figures to have a better structure
-	- [ ] Add lines connecting the relay circles and figures
+	- [x] Add lines connecting the relay circles and figures
 	- [x] Fix the graphical bug on the relay figures
 ]]
 
@@ -18,7 +18,7 @@ local game = {}
 game.width, game.height = math.floor(window.width * 0.66), math.floor(window.height * 0.66)
 
 local mainCircle = {
-  center_x = game.width/6,
+  center_x = game.width /6,
   center_y = game.height/2,
   radius   = game.height/6,
 }
@@ -37,12 +37,12 @@ local relayCircle = {
 
 function relayCircle:create(x, y, color)
   local circle = {
-    x = x,
-    y = y,
-    size = game.height/32,
-    color = color or {1, 1, 1},
-    angle = 0,
-    speed = 100,
+    x =      x,
+    y =      y,
+    size =   game.height/32,
+    color =  color or {1, 1, 1},
+    angle =  0,
+    speed =  100,
     figure = {} -- List of figure points
   }
 
@@ -51,26 +51,33 @@ end
 
 function relayCircle:draw()
   for i, c in ipairs(self.list) do
-    love.graphics.push()
+    if #c.figure <= 2 then break end  -- Skip frame if the line has less than two vertices
+
+    -- Line
+    love.graphics.setColor(0.5, 0.5, 1)
+    love.graphics.setLineWidth(game.height/64)
+    love.graphics.line(math.floor(c.x), math.floor(c.y), c.figure[#c.figure-1], c.figure[#c.figure])
+
+    -- Relay circle
     love.graphics.setColor(c.color)
     love.graphics.circle('fill', math.floor(c.x), math.floor(c.y), c.size)
-    love.graphics.pop()
 
+    -- Angle text
     love.graphics.print("angle: " .. math.floor(c.angle) .. "°", game.height/8, i*game.height/16) 
 
-    if #c.figure > 2 then
-      love.graphics.line(c.figure)
-    end
+    -- Wave shape
+    love.graphics.setLineWidth(game.height/32)
+    love.graphics.line(c.figure)
+    love.graphics.circle('fill', c.figure[1],           c.figure[2],         game.height/64) -- Trail smoothing start
+    love.graphics.circle('fill', c.figure[#c.figure-1], c.figure[#c.figure], game.height/64) -- Trail smoothing end
   end
 end
 
 function relayCircle:update(dt)
-  for i, c in ipairs(self.list) do
+  for _, c in ipairs(self.list) do
     -- Update cardinal coords based on polar coords
     c.x = mainCircle.center_x + mainCircle.radius*math.cos(math.rad(c.angle))
     c.y = mainCircle.center_y - mainCircle.radius*math.sin(math.rad(c.angle))
-    
-    
 
     if self.start == nil then 
       self.start = love.timer.getTime()
@@ -84,13 +91,13 @@ function relayCircle:update(dt)
       end
     end
 
-    for j, f in ipairs(c.figure) do
-      if j%2== 1 then
-        c.figure[j] = c.figure[j] + 100 * dt
+    for i in ipairs(c.figure) do
+      if i%2== 1 then
+        c.figure[i] = c.figure[i] + 100 * dt
 
-        if c.figure[j] > game.width*1.2 then -- Remove off-screen figures
-          table.remove(c.figure, j)
-          table.remove(c.figure, j)
+        if c.figure[i] > game.width*1.2 then -- Remove off-screen figures
+          table.remove(c.figure, i)
+          table.remove(c.figure, i)
         end
       end
     end
@@ -107,8 +114,8 @@ function arc.load()
 
   -- Sin relay circle
   relayCircle:create(mainCircle.center_x+mainCircle.radius, mainCircle.center_y, {0, 0, 1})
-  -- Todo: Cos relay circle
-
+  -- Cos relay circle
+  --relayCircle:create(mainCircle.center_x-mainCircle.radius, mainCircle.center_y, {1, 0, 0})
 end
 
 function arc.update(dt)
